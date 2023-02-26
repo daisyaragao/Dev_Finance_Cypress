@@ -1,11 +1,9 @@
 
 /// <reference types="cypress" />
 
-import { format } from "../support/utils";
-
 context('Dev Finances', () => {
     
-		//entender o fluxo manualmente
+	//entender o fluxo manualmente
         //mapear os elementos que vamos interagir
         //descrever as interações com o cypress
         //adicionar as asserções que precisamos
