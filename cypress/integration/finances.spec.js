@@ -1,8 +1,6 @@
 
 /// <reference types="cypress" />
 
-import { format } from "../support/utils";
-
 context('Dev Finances', () => {
     
 		//entender o fluxo manualmente
