@@ -1,16 +1,59 @@
-name: Cypress Tests using Cypress Docker Image
-on: [push]
-jobs:
- cypress-run:
- runs-on: ubuntu-latest
- container: cypress/browsers:node12.18.3-chrome87-ff82
- steps:
- — name: Checkout
- uses: actions/checkout@v2
-# Install NPM dependencies, cache them correctly
- # and run all Cypress tests
- — name: Cypress run
- uses: cypress-io/github-action@v2
- with:
- # Specify Browser since container image is compile with Firefox
- browser: chrome
+nome : principal
+em :
+  empurre :
+    ramos :
+      - ' mestre '
+  pull_request :
+trabalhos :
+  construir e testar :
+    executado em : ubuntu-22.04
+    nome : Construa e teste
+    passos :
+      - nome : Check-out
+        usa : ações/checkout@v3
+      - nome : nó de configuração
+        usa : ações/nó-de-configuração@v3
+        com :
+          # A ação é executada: using: node16 conforme definido em
+          # https://github.com/cypress-io/github-action/blob/master/action.yml
+          # A versão secundária do Node.js está alinhada com
+          # https://github.com/actions/runner/blob/main/src/Misc/externals.sh
+          versão do nó : 16.16.0
+      - usa : bahmutov/npm-install@v1
+      - executar : formato de execução npm
+      - run : npm run build
+      - executar : teste npm
+
+  lançamento :
+    executado em : ubuntu-22.04
+    nome : lançamento
+    necessidades : [construir e testar]
+    # só libera do branch master
+    # no repositório pai, não em uma bifurcação
+    if : (github.ref == 'refs/heads/master') &&
+      (github.repository == 'cypress-io/github-action')
+    passos :
+      - nome : Check-out
+        usa : ações/checkout@v3
+      - usa : bahmutov/npm-install@v1
+      # https://github.com/cycjimmy/semantic-release-action
+      - nome : Liberação Semântica
+        usa : cycjimmy/semantic-release-action@v3
+        id : semântico
+        com :
+          ramo : mestre
+          extra_plugins : |
+            @semantic-release/git
+            @semantic-release/changelog
+        ambiente :
+          GITHUB_TOKEN : ${{ segredos.GITHUB_TOKEN }}
+          NPM_TOKEN : ${{ segredos.NPM_TOKEN }}
+
+      - name : Atualizações por push para ramificar para a versão principal
+        # se houver uma nova versão publicada, digamos v1.2.3
+        # então esta etapa atualizará a ramificação "v1" para este commit
+        # https://github.com/cypress-io/github-action/branches
+        if : steps.semantic.outputs.new_release_published == 'true'
+        execute : ' git push https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git HEAD:refs/heads/v${{steps.semantic.outputs.new_release_major_version}} '
+        ambiente :
+          GITHUB_TOKEN : ${{ segredos.GITHUB_TOKEN }}
